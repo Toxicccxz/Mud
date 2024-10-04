@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:martial_world/data/models/save_data.dart';
 import 'package:martial_world/data/services/save_service.dart';
 
@@ -23,7 +22,7 @@ class SaveManagementScreenState extends State<SaveManagementScreen> {
   // 加载存档数据
   void _loadSaves() async {
     for (int i = 0; i < saves.length; i++) {
-      SaveData? saveData = await saveService.loadGame(); // 假设每次只加载一个存档
+      SaveData? saveData = await saveService.loadGame(i); // 为每个槽位加载存档
       if (saveData != null) {
         setState(() {
           saves[i] = saveData.playerName; // 从本地加载的存档名称
@@ -51,13 +50,13 @@ class SaveManagementScreenState extends State<SaveManagementScreen> {
               onPressed: () async {
                 // 创建并保存新的存档
                 SaveData newSaveData = SaveData(
-                  playerName: '存档 ${index + 1}',
+                  playerName: 'player ${index + 1}',
                   playerLevel: 1,
                   experiencePoints: 0,
                   currentMap: '起始村庄',
                   gameState: {}, // 初始化游戏状态
                 );
-                await saveService.saveGame(newSaveData);
+                await saveService.saveGame(newSaveData, index); // 按索引保存存档
 
                 setState(() {
                   saves[index] = '存档 ${index + 1}'; // 创建存档
@@ -89,7 +88,7 @@ class SaveManagementScreenState extends State<SaveManagementScreen> {
             ),
             TextButton(
               onPressed: () async {
-                await saveService.deleteSave(); // 删除存档
+                await saveService.deleteSave(index); // 删除存档
 
                 setState(() {
                   saves[index] = null; // 删除存档
