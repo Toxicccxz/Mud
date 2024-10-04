@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:martial_world/data/models/save_data.dart';
 import 'package:martial_world/data/services/save_service.dart';
+import 'package:martial_world/game_screen.dart'; // 导入游戏主界面
 
 class SaveManagementScreen extends StatefulWidget {
   const SaveManagementScreen({super.key});
@@ -119,12 +120,18 @@ class SaveManagementScreenState extends State<SaveManagementScreen> {
               child: const Text('取消'),
             ),
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // 关闭弹窗
-                // 在这里处理载入存档的逻辑
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('载入存档 ${index + 1}')),
-                );
+              onPressed: () async {
+                // 加载存档并导航到游戏主界面
+                SaveData? saveData = await saveService.loadGame(index); // 加载对应存档
+                if (saveData != null) {
+                  Navigator.of(context).pop(); // 关闭弹窗
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => GameScreen(saveData: saveData), // 导航到主游戏界面
+                    ),
+                  );
+                }
               },
               child: const Text('确定'),
             ),
