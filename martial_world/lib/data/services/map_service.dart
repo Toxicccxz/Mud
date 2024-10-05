@@ -18,7 +18,8 @@ class MapService {
         }
       }
     } catch (e) {
-      print('加载地图数据失败: $e');
+      // 更详细的错误信息
+      print('加载地图 "$mapName" 的数据时出错: $e');
     }
     return null;
   }

@@ -84,7 +84,7 @@ void _showCreateDialog(int index) {
                 playerName: _nameController.text, // 使用用户输入的存档名称
                 playerLevel: 1,
                 experiencePoints: 0,
-                currentMap: '起始村庄', // 初始地图
+                currentMap: '城镇1', // 初始地图
                 gameState: {}, // 初始化游戏状态
               );
 
