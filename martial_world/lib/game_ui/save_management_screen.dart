@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:martial_world/data/models/save_data.dart';
 import 'package:martial_world/data/services/save_service.dart';
-import 'package:martial_world/game_screen.dart'; // 导入游戏主界面
+import 'package:martial_world/data/services/map_service.dart'; // 导入地图服务
+import 'package:martial_world/game_ui/game_screen.dart'; // 导入游戏主界面
+import 'package:martial_world/data/models/map_model.dart'; // 导入地图模型
 
 class SaveManagementScreen extends StatefulWidget {
   const SaveManagementScreen({super.key});
@@ -13,6 +15,7 @@ class SaveManagementScreen extends StatefulWidget {
 class SaveManagementScreenState extends State<SaveManagementScreen> {
   List<String?> saves = List<String?>.filled(3, null); // 初始化3个空存档槽位
   final SaveService saveService = SaveService();
+  final MapService mapService = MapService(); // 实例化地图服务
 
   @override
   void initState() {
@@ -104,7 +107,7 @@ class SaveManagementScreenState extends State<SaveManagementScreen> {
     );
   }
 
-  // 载入存档弹窗
+  // 载入存档并加载地图数据
   void _showLoadDialog(int index) {
     showDialog(
       context: context,
@@ -121,16 +124,30 @@ class SaveManagementScreenState extends State<SaveManagementScreen> {
             ),
             TextButton(
               onPressed: () async {
-                // 加载存档并导航到游戏主界面
+                // 加载存档
                 SaveData? saveData = await saveService.loadGame(index); // 加载对应存档
                 if (saveData != null) {
-                  Navigator.of(context).pop(); // 关闭弹窗
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => GameScreen(saveData: saveData), // 导航到主游戏界面
-                    ),
-                  );
+                  // 根据存档中的 `currentMap` 加载地图数据
+                  MapData? currentMapData = await mapService.loadMap(saveData.currentMap);
+                  
+                  if (currentMapData != null) {
+                    Navigator.of(context).pop(); // 关闭弹窗
+                    // 导航到主游戏界面，传递存档和地图数据
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => GameScreen(
+                          saveData: saveData,
+                          currentMapData: currentMapData, // 传递当前地图的数据
+                        ),
+                      ),
+                    );
+                  } else {
+                    // 如果地图数据不存在，显示错误
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('无法加载地图数据！')),
+                    );
+                  }
                 }
               },
               child: const Text('确定'),
