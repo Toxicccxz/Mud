@@ -37,7 +37,7 @@ class SaveManagementScreenState extends State<SaveManagementScreen> {
 
 // 创建存档弹窗
 void _showCreateDialog(int index) {
-  TextEditingController _nameController = TextEditingController(); // 控制输入框
+  TextEditingController nameController = TextEditingController(); // 控制输入框
 
   showDialog(
     context: context,
@@ -49,7 +49,7 @@ void _showCreateDialog(int index) {
           children: [
             const Text('请输入存档名称:'),
             TextField(
-              controller: _nameController, // 添加输入框以让用户输入存档名称
+              controller: nameController, // 添加输入框以让用户输入存档名称
               decoration: const InputDecoration(hintText: '存档名称'),
             ),
           ],
@@ -64,7 +64,7 @@ void _showCreateDialog(int index) {
           TextButton(
             onPressed: () async {
               // 检查是否输入了存档名称
-              if (_nameController.text.isEmpty) {
+              if (nameController.text.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('存档名称不能为空！')),
                 );
@@ -72,7 +72,7 @@ void _showCreateDialog(int index) {
               }
 
               // 检查是否已有相同名称的存档
-              if (saves.contains(_nameController.text)) {
+              if (saves.contains(nameController.text)) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(content: Text('存档名称已存在，请使用不同的名称。')),
                 );
@@ -81,7 +81,7 @@ void _showCreateDialog(int index) {
 
               // 创建并保存新的存档
               SaveData newSaveData = SaveData(
-                playerName: _nameController.text, // 使用用户输入的存档名称
+                playerName: nameController.text, // 使用用户输入的存档名称
                 playerLevel: 1,
                 experiencePoints: 0,
                 currentMap: '城镇1', // 初始地图
@@ -91,14 +91,14 @@ void _showCreateDialog(int index) {
               await saveService.saveGame(newSaveData, index); // 按索引保存存档
 
               setState(() {
-                saves[index] = _nameController.text; // 更新存档列表
+                saves[index] = nameController.text; // 更新存档列表
               });
 
               Navigator.of(context).pop(); // 关闭弹窗
 
               // 显示成功创建存档的消息
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('成功创建存档: ${_nameController.text}')),
+                SnackBar(content: Text('成功创建存档: ${nameController.text}')),
               );
             },
             child: const Text('确定'),
