@@ -1,10 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:logger/logger.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:encrypt/encrypt.dart';
 import '../models/save_data.dart';
 
 class SaveService {
+  var logger = Logger();
   static const String _encryptionKey =
       'my32lengthsupersecretnooneknows1'; // 32位密钥
 
@@ -48,7 +50,7 @@ class SaveService {
           encrypter.decrypt(Encrypted.fromBase64(encryptedBase64), iv: iv);
       return decrypted;
     } catch (e) {
-      print('解密过程中出错: $e');
+      logger.e('解密过程中出错: $e');
       throw e;
     }
   }
@@ -57,10 +59,10 @@ class SaveService {
   Future<void> saveGame(SaveData saveData, int index) async {
     final filePath = await _getSaveFilePath(index);
     final jsonData = jsonEncode(saveData.toJson());
-    print('保存存档: $jsonData');
+    logger.d('保存存档: $jsonData');
 
     final encryptedData = _encryptData(jsonData); // 加密数据
-    print('加密后的数据: $encryptedData'); // 输出加密后的数据
+    logger.d('加密后的数据: $encryptedData'); // 输出加密后的数据
 
     final file = File(filePath);
     await file.writeAsString(encryptedData); // 将加密后的数据写入文件
@@ -74,21 +76,21 @@ class SaveService {
 
       if (await file.exists()) {
         final encryptedData = await file.readAsString();
-        print('读取到加密数据: $encryptedData'); // 输出加密后的数据
+        logger.d('读取到加密数据: $encryptedData'); // 输出加密后的数据
 
         final decryptedData = _decryptData(encryptedData); // 尝试解密
-        print('解密后数据: $decryptedData'); // 输出解密后的内容
+        logger.d('解密后数据: $decryptedData'); // 输出解密后的内容
 
         final jsonData = jsonDecode(decryptedData); // 解析 JSON
-        print('解析的 JSON 数据: $jsonData');
+        logger.d('解析的 JSON 数据: $jsonData');
 
         return SaveData.fromJson(jsonData); // 返回反序列化后的数据
       } else {
-        print('存档文件不存在: $filePath');
+        logger.d('存档文件不存在: $filePath');
         return null; // 如果没有存档文件
       }
     } catch (e) {
-      print('加载存档出错: $e'); // 捕获并输出错误
+      logger.e('加载存档出错: $e'); // 捕获并输出错误
       return null;
     }
   }

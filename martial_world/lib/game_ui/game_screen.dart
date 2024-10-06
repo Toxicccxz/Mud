@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:martial_world/data/models/save_data.dart';
 import 'package:martial_world/data/models/map_model.dart'; // 导入地图模型
+import '../data/services/map_painter.dart'; // 导入自定义的 MapPainter
 
 class GameScreen extends StatelessWidget {
   final SaveData saveData;
   final MapData currentMapData; // 当前地图的数据
+  final List<MapData> allMaps; // 所有地图数据
 
-  const GameScreen({super.key, required this.saveData, required this.currentMapData});
+  const GameScreen({
+    super.key,
+    required this.saveData,
+    required this.currentMapData,
+    required this.allMaps,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +29,14 @@ class GameScreen extends StatelessWidget {
           // 中间环境描述区域
           Expanded(
             child: _buildEnvironmentDescription(),
+          ),
+          // 地图区域，使用 CustomPaint 来绘制地图
+          Container(
+            height: 200, // 设置地图显示区域大小
+            child: CustomPaint(
+              size: const Size(double.infinity, 200), // 地图的尺寸
+              painter: MapPainter(currentMap: currentMapData, allMaps: allMaps),
+            ),
           ),
           // 底部指令输入与动作按钮
           _buildActionsAndInput(),
@@ -59,7 +75,7 @@ class GameScreen extends StatelessWidget {
         child: SingleChildScrollView(
           child: Text(
             _generateEnvironmentDescription(), // 动态生成环境描述
-            style: TextStyle(fontSize: 16),
+            style: const TextStyle(fontSize: 16),
           ),
         ),
       ),
@@ -94,8 +110,9 @@ class GameScreen extends StatelessWidget {
     return description;
   }
 
-  // 构建动作按钮和指令输入区域，动态调整出入口
+  // 构建动作按钮和指令输入区域
   Widget _buildActionsAndInput() {
+    var logger = Logger();
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
@@ -108,11 +125,11 @@ class GameScreen extends StatelessWidget {
             ),
             onSubmitted: (value) {
               // 处理用户输入的指令
-              print('用户输入了: $value');
+              logger.d('用户输入了: $value');
             },
           ),
           const SizedBox(height: 10),
-          // 动作按钮，动态显示出入口
+          // 动作按钮
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: _buildExitButtons(),
@@ -125,40 +142,41 @@ class GameScreen extends StatelessWidget {
   // 根据地图的出入口构建按钮
   List<Widget> _buildExitButtons() {
     List<Widget> buttons = [];
+    var logger = Logger();
     
     if (currentMapData.exits.contains('北')) {
       buttons.add(ElevatedButton(
         onPressed: () {
-          print('向北移动');
+          logger.d('向北移动');
         },
-        child: Text('向北'),
+        child: const Text('向北'),
       ));
     }
     
     if (currentMapData.exits.contains('南')) {
       buttons.add(ElevatedButton(
         onPressed: () {
-          print('向南移动');
+          logger.d('向南移动');
         },
-        child: Text('向南'),
+        child: const Text('向南'),
       ));
     }
     
     if (currentMapData.exits.contains('东')) {
       buttons.add(ElevatedButton(
         onPressed: () {
-          print('向东移动');
+          logger.d('向东移动');
         },
-        child: Text('向东'),
+        child: const Text('向东'),
       ));
     }
     
     if (currentMapData.exits.contains('西')) {
       buttons.add(ElevatedButton(
         onPressed: () {
-          print('向西移动');
+          logger.e('向西移动');
         },
-        child: Text('向西'),
+        child: const Text('向西'),
       ));
     }
     

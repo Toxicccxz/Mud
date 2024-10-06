@@ -36,78 +36,78 @@ class SaveManagementScreenState extends State<SaveManagementScreen> {
   }
 
 // 创建存档弹窗
-void _showCreateDialog(int index) {
-  TextEditingController nameController = TextEditingController(); // 控制输入框
+  void _showCreateDialog(int index) {
+    TextEditingController nameController = TextEditingController(); // 控制输入框
 
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('创建新存档'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('请输入存档名称:'),
-            TextField(
-              controller: nameController, // 添加输入框以让用户输入存档名称
-              decoration: const InputDecoration(hintText: '存档名称'),
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('创建新存档'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('请输入存档名称:'),
+              TextField(
+                controller: nameController, // 添加输入框以让用户输入存档名称
+                decoration: const InputDecoration(hintText: '存档名称'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // 关闭弹窗
+              },
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () async {
+                // 检查是否输入了存档名称
+                if (nameController.text.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('存档名称不能为空！')),
+                  );
+                  return;
+                }
+
+                // 检查是否已有相同名称的存档
+                if (saves.contains(nameController.text)) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('存档名称已存在，请使用不同的名称。')),
+                  );
+                  return;
+                }
+
+                // 创建并保存新的存档
+                SaveData newSaveData = SaveData(
+                  playerName: nameController.text, // 使用用户输入的存档名称
+                  playerLevel: 1,
+                  experiencePoints: 0,
+                  currentMap: '城镇1', // 初始地图
+                  gameState: {}, // 初始化游戏状态
+                );
+
+                await saveService.saveGame(newSaveData, index); // 按索引保存存档
+
+                setState(() {
+                  saves[index] = nameController.text; // 更新存档列表
+                });
+
+                Navigator.of(context).pop(); // 关闭弹窗
+
+                // 显示成功创建存档的消息
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('成功创建存档: ${nameController.text}')),
+                );
+              },
+              child: const Text('确定'),
             ),
           ],
-        ),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop(); // 关闭弹窗
-            },
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () async {
-              // 检查是否输入了存档名称
-              if (nameController.text.isEmpty) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('存档名称不能为空！')),
-                );
-                return;
-              }
-
-              // 检查是否已有相同名称的存档
-              if (saves.contains(nameController.text)) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('存档名称已存在，请使用不同的名称。')),
-                );
-                return;
-              }
-
-              // 创建并保存新的存档
-              SaveData newSaveData = SaveData(
-                playerName: nameController.text, // 使用用户输入的存档名称
-                playerLevel: 1,
-                experiencePoints: 0,
-                currentMap: '城镇1', // 初始地图
-                gameState: {}, // 初始化游戏状态
-              );
-
-              await saveService.saveGame(newSaveData, index); // 按索引保存存档
-
-              setState(() {
-                saves[index] = nameController.text; // 更新存档列表
-              });
-
-              Navigator.of(context).pop(); // 关闭弹窗
-
-              // 显示成功创建存档的消息
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('成功创建存档: ${nameController.text}')),
-              );
-            },
-            child: const Text('确定'),
-          ),
-        ],
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 
   // 删除存档弹窗
   void _showDeleteDialog(int index) {
@@ -141,7 +141,6 @@ void _showCreateDialog(int index) {
     );
   }
 
-  // 载入存档并加载地图数据
   void _showLoadDialog(int index) {
     showDialog(
       context: context,
@@ -159,27 +158,34 @@ void _showCreateDialog(int index) {
             TextButton(
               onPressed: () async {
                 // 加载存档
-                SaveData? saveData = await saveService.loadGame(index); // 加载对应存档
+                SaveData? saveData =
+                    await saveService.loadGame(index); // 加载对应存档
                 if (saveData != null) {
-                  // 根据存档中的 `currentMap` 加载地图数据
-                  MapData? currentMapData = await mapService.loadMap(saveData.currentMap);
-                  
-                  if (currentMapData != null) {
+                  // 根据存档中的 `currentMap` 加载当前地图数据
+                  MapData? currentMapData =
+                      await mapService.loadMap(saveData.currentMap);
+
+                  // 加载所有地图数据
+                  List<MapData> allMaps =
+                      await mapService.loadAllMaps(); // 新增：加载所有地图
+
+                  if (currentMapData != null && allMaps.isNotEmpty) {
                     Navigator.of(context).pop(); // 关闭弹窗
-                    // 导航到主游戏界面，传递存档和地图数据
+                    // 导航到主游戏界面，传递存档、当前地图和所有地图数据
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => GameScreen(
                           saveData: saveData,
                           currentMapData: currentMapData, // 传递当前地图的数据
+                          allMaps: allMaps, // 传递所有地图的数据
                         ),
                       ),
                     );
                   } else {
                     // 如果地图数据不存在，显示错误
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('无法加载地图数据！')),
+                      const SnackBar(content: Text('无法加载地图数据！')),
                     );
                   }
                 }

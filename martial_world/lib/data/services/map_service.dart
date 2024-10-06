@@ -1,16 +1,16 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
+import 'package:logger/logger.dart';
 import 'package:martial_world/data/models/map_model.dart';
 
 class MapService {
-  // 加载地图数据
+  var logger = Logger();
+  // 加载当前地图数据
   Future<MapData?> loadMap(String mapName) async {
     try {
-      // 加载 JSON 文件中的地图数据
       final String response = await rootBundle.loadString('assets/maps/map_data.json');
       final List<dynamic> mapList = jsonDecode(response);
       
-      // 查找对应的地图
       for (var mapJson in mapList) {
         MapData mapData = MapData.fromJson(mapJson);
         if (mapData.name == mapName) {
@@ -18,9 +18,20 @@ class MapService {
         }
       }
     } catch (e) {
-      // 更详细的错误信息
-      print('加载地图 "$mapName" 的数据时出错: $e');
+      logger.e('加载地图数据失败: $e');
     }
     return null;
+  }
+
+  // 新增：加载所有地图数据
+  Future<List<MapData>> loadAllMaps() async {
+    try {
+      final String response = await rootBundle.loadString('assets/maps/map_data.json');
+      final List<dynamic> mapList = jsonDecode(response);
+      return mapList.map((mapJson) => MapData.fromJson(mapJson)).toList();
+    } catch (e) {
+      logger.e('加载所有地图数据失败: $e');
+      return [];
+    }
   }
 }
