@@ -11,12 +11,12 @@ class MapPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = Colors.black
-      ..strokeWidth = 2;
+      ..strokeWidth = 1;
 
     final center = Offset(size.width / 2, size.height / 2);
     
     // 设置方块的大小
-    const squareSize = 50.0;
+    const squareSize = 10.0;
 
     // 绘制中心地图 (实心方块)
     _drawSolidSquare(canvas, center, squareSize, paint);
