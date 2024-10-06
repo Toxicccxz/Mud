@@ -110,25 +110,13 @@ class GameScreen extends StatelessWidget {
     return description;
   }
 
-  // 构建动作按钮和指令输入区域
+  // 构建动作按钮和指令区域
   Widget _buildActionsAndInput() {
     var logger = Logger();
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
-          // 指令输入框
-          TextField(
-            decoration: const InputDecoration(
-              hintText: '输入指令...',
-              border: OutlineInputBorder(),
-            ),
-            onSubmitted: (value) {
-              // 处理用户输入的指令
-              logger.d('用户输入了: $value');
-            },
-          ),
-          const SizedBox(height: 10),
           // 动作按钮
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -174,7 +162,7 @@ class GameScreen extends StatelessWidget {
     if (currentMapData.exits.contains('西')) {
       buttons.add(ElevatedButton(
         onPressed: () {
-          logger.e('向西移动');
+          logger.d('向西移动');
         },
         child: const Text('向西'),
       ));
