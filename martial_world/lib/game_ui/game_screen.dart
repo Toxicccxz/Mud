@@ -26,17 +26,17 @@ class GameScreen extends StatelessWidget {
         children: [
           // 顶部玩家信息区域
           _buildPlayerInfo(),
-          // 中间环境描述区域
-          Expanded(
-            child: _buildEnvironmentDescription(),
-          ),
-          // 地图区域，使用 CustomPaint 来绘制地图
+          // 地图区域，使用 CustomPaint 来绘制地图，放在玩家信息下方
           Container(
             height: 200, // 设置地图显示区域大小
             child: CustomPaint(
               size: const Size(double.infinity, 200), // 地图的尺寸
               painter: MapPainter(currentMap: currentMapData, allMaps: allMaps),
             ),
+          ),
+          // 中间环境描述区域，放在地图模块的下方
+          Expanded(
+            child: _buildEnvironmentDescription(),
           ),
           // 底部指令输入与动作按钮
           _buildActionsAndInput(),
