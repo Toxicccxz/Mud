@@ -3,7 +3,10 @@ import 'package:martial_world/data/models/save_data.dart';
 import 'package:martial_world/data/services/save_service.dart';
 import 'package:martial_world/data/services/map_service.dart'; // 导入地图服务
 import 'package:martial_world/game_ui/game_screen.dart'; // 导入游戏主界面
-import 'package:martial_world/data/models/map_model.dart'; // 导入地图模型
+import 'package:martial_world/data/models/map_model.dart';
+import 'package:provider/provider.dart';
+
+import '../data/services/game_state.dart'; // 导入地图模型
 
 class SaveManagementScreen extends StatefulWidget {
   const SaveManagementScreen({super.key});
@@ -35,7 +38,7 @@ class SaveManagementScreenState extends State<SaveManagementScreen> {
     }
   }
 
-// 创建存档弹窗
+  // 创建存档弹窗
   void _showCreateDialog(int index) {
     TextEditingController nameController = TextEditingController(); // 控制输入框
 
@@ -141,6 +144,7 @@ class SaveManagementScreenState extends State<SaveManagementScreen> {
     );
   }
 
+  // 载入存档并加载地图数据
   void _showLoadDialog(int index) {
     showDialog(
       context: context,
@@ -161,29 +165,30 @@ class SaveManagementScreenState extends State<SaveManagementScreen> {
                 SaveData? saveData =
                     await saveService.loadGame(index); // 加载对应存档
                 if (saveData != null) {
-                  // 根据存档中的 `currentMap` 加载当前地图数据
+                  // 根据存档中的 `currentMap` 加载地图数据
                   MapData? currentMapData =
                       await mapService.loadMap(saveData.currentMap);
 
-                  // 加载所有地图数据
-                  List<MapData> allMaps =
-                      await mapService.loadAllMaps(); // 新增：加载所有地图
+                  if (currentMapData != null) {
+                    List<MapData> allMaps =
+                        await mapService.loadAllMaps(); // 加载所有地图数据
 
-                  if (currentMapData != null && allMaps.isNotEmpty) {
                     Navigator.of(context).pop(); // 关闭弹窗
-                    // 导航到主游戏界面，传递存档、当前地图和所有地图数据
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => GameScreen(
-                          saveData: saveData,
-                          currentMapData: currentMapData, // 传递当前地图的数据
-                          allMaps: allMaps, // 传递所有地图的数据
+                        builder: (context) => ChangeNotifierProvider(
+                          create: (_) => GameState(
+                              initialMap: currentMapData, allMaps: allMaps),
+                          child: GameScreen(
+                            saveData: saveData,
+                            currentMapData: currentMapData,
+                            allMaps: allMaps,
+                          ),
                         ),
                       ),
                     );
                   } else {
-                    // 如果地图数据不存在，显示错误
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('无法加载地图数据！')),
                     );

@@ -1,7 +1,7 @@
 class SaveData {
   final String playerName;
   final int playerLevel;
-  final int experiencePoints;
+  int experiencePoints;
   final String currentMap;
   final Map<String, dynamic> gameState;
 
