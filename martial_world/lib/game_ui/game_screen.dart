@@ -31,7 +31,7 @@ class GameScreen extends StatelessWidget {
           // 地图区域，使用 CustomPaint 来绘制地图
           Consumer<GameState>(
             builder: (context, gameState, _) {
-              return Container(
+              return SizedBox(
                 height: 200,
                 child: CustomPaint(
                   size: const Size(double.infinity, 200),
@@ -61,14 +61,14 @@ class GameScreen extends StatelessWidget {
       child: Column(
         children: [
           Text('玩家: ${saveData.playerName}',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          Text('等级: ${saveData.playerLevel}', style: TextStyle(fontSize: 16)),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text('等级: ${saveData.playerLevel}', style: const TextStyle(fontSize: 16)),
           Text('经验值: ${saveData.experiencePoints}',
-              style: TextStyle(fontSize: 16)),
+              style: const TextStyle(fontSize: 16)),
           Consumer<GameState>(
             builder: (context, gameState, _) {
               return Text('当前位置: ${gameState.currentMap.name}',
-                  style: TextStyle(fontSize: 16));
+                  style: const TextStyle(fontSize: 16));
             },
           ),
         ],

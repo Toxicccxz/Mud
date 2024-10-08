@@ -51,7 +51,7 @@ class SaveService {
       return decrypted;
     } catch (e) {
       logger.e('解密过程中出错: $e');
-      throw e;
+      rethrow;
     }
   }
 
