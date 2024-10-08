@@ -3,7 +3,6 @@ import 'package:martial_world/data/models/save_data.dart';
 import 'package:martial_world/data/services/map_painter.dart';
 import 'package:martial_world/data/services/game_state.dart'; // 导入游戏状态
 import 'package:provider/provider.dart';
-
 import '../data/models/map_model.dart';
 
 class GameScreen extends StatelessWidget {
@@ -20,36 +19,40 @@ class GameScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('游戏 - ${saveData.playerName}'),
-      ),
-      body: Column(
-        children: [
-          // 顶部玩家信息区域
-          _buildPlayerInfo(context),
-          // 地图区域，使用 CustomPaint 来绘制地图
-          Consumer<GameState>(
-            builder: (context, gameState, _) {
-              return SizedBox(
-                height: 200,
-                child: CustomPaint(
-                  size: const Size(double.infinity, 200),
-                  painter: MapPainter(
-                    currentMap: gameState.currentMap,
-                    allMaps: allMaps,
+    return ChangeNotifierProvider(
+      create: (_) => GameState(initialMap: currentMapData, allMaps: allMaps),
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text('游戏 - ${saveData.playerName}'),
+        ),
+        body: Column(
+          children: [
+            // 顶部玩家信息区域
+            _buildPlayerInfo(context),
+            // 地图区域，使用 CustomPaint 来绘制地图
+            Consumer<GameState>(
+              builder: (context, gameState, _) {
+                return SizedBox(
+                  height: 200,
+                  child: CustomPaint(
+                    size: const Size(double.infinity, 200),
+                    painter: MapPainter(
+                      currentMap: gameState.currentMap,
+                      allMaps: gameState.allMaps,
+                      currentRoomId: gameState.currentRoomId, // 当前所在的房间ID
+                    ),
                   ),
-                ),
-              );
-            },
-          ),
-          // 中间环境描述区域
-          Expanded(
-            child: _buildEnvironmentDescription(context),
-          ),
-          // 底部指令输入与动作按钮
-          _buildActionsAndInput(context),
-        ],
+                );
+              },
+            ),
+            // 中间环境描述区域
+            Expanded(
+              child: _buildEnvironmentDescription(context),
+            ),
+            // 底部指令输入与动作按钮
+            _buildActionsAndInput(context),
+          ],
+        ),
       ),
     );
   }
@@ -61,14 +64,23 @@ class GameScreen extends StatelessWidget {
       child: Column(
         children: [
           Text('玩家: ${saveData.playerName}',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-          Text('等级: ${saveData.playerLevel}', style: const TextStyle(fontSize: 16)),
+              style:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          Text('等级: ${saveData.playerLevel}',
+              style: const TextStyle(fontSize: 16)),
           Text('经验值: ${saveData.experiencePoints}',
               style: const TextStyle(fontSize: 16)),
           Consumer<GameState>(
             builder: (context, gameState, _) {
-              return Text('当前位置: ${gameState.currentMap.name}',
-                  style: const TextStyle(fontSize: 16));
+              return Column(
+                children: [
+                  Text('当前位置: ${gameState.currentMap.name}',
+                      style: const TextStyle(fontSize: 16)),
+                  if (gameState.currentRoomId != null)
+                    Text('当前房间: ${gameState.currentRoomId}',
+                        style: const TextStyle(fontSize: 16)),
+                ],
+              );
             },
           ),
         ],
@@ -146,7 +158,7 @@ class GameScreen extends StatelessWidget {
     );
   }
 
-  // 根据地图的出入口构建按钮，并更新当前地图数据
+  // 根据地图的出入口构建按钮，并更新当前地图或房间数据
   List<Widget> _buildExitButtons(BuildContext context) {
     final gameState = Provider.of<GameState>(context, listen: false);
     List<Widget> buttons = [];
@@ -179,7 +191,28 @@ class GameScreen extends StatelessWidget {
       ));
     }
 
+    // 如果当前地图有房间，添加房间进入的按钮
+    if (gameState.currentMap.rooms != null &&
+        gameState.currentMap.rooms!.isNotEmpty) {
+      buttons.addAll(_buildRoomButtons(context));
+    }
+
     return buttons;
+  }
+
+  // 构建进入房间的按钮
+  List<Widget> _buildRoomButtons(BuildContext context) {
+    final gameState = Provider.of<GameState>(context, listen: false);
+    List<Widget> roomButtons = [];
+
+    for (var room in gameState.currentMap.rooms!) {
+      roomButtons.add(ElevatedButton(
+        onPressed: () => _enterRoom(context, room.id),
+        child: Text('进入 ${room.id} 房间'),
+      ));
+    }
+
+    return roomButtons;
   }
 
   // 移动到下一个地图
@@ -194,5 +227,11 @@ class GameScreen extends StatelessWidget {
         break;
       }
     }
+  }
+
+  // 进入房间
+  void _enterRoom(BuildContext context, String roomId) {
+    final gameState = Provider.of<GameState>(context, listen: false);
+    gameState.moveToNextRoom(roomId); // 更新当前房间
   }
 }
